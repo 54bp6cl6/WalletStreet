@@ -60,6 +60,12 @@ func HandleFollowEvent(event *linebot.Event) (err error) {
 	case linebot.EventTypeUnfollow:
 		return
 	}
-	// TODO: Go to next middleware.
+
+	err = HandleNotInGameEvent(event)
+	return
+}
+
+func HandleNotInGameEvent(event *linebot.Event) (err error) {
+	// TODO: Go to next middleware
 	return
 }
