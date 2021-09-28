@@ -29,6 +29,8 @@ func init() {
 
 // Cloud Function 進入點
 func Webhook(w http.ResponseWriter, r *http.Request) {
+	db.Connect()
+	defer db.Close()
 	events, err := bot.ParseRequest(r)
 	if err != nil {
 		if err == linebot.ErrInvalidSignature {
