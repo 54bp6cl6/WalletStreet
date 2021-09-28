@@ -81,6 +81,7 @@ func HandleNotInGameEvent(event *linebot.Event) (err error) {
 
 	switch event.Type {
 	case linebot.EventTypePostback:
+		fmt.Printf("Postback: %v", event.Postback.Data)
 		var data map[string]interface{}
 		if data, err = postback.ToMap(event.Postback.Data); err != nil {
 			_, err = bot.ReplyMessage(event.ReplyToken, ui.ErrorMessage(err)).Do()
