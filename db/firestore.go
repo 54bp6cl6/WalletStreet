@@ -13,11 +13,16 @@ var (
 	ctx    context.Context
 )
 
-func init() {
+func Connect() {
 	var err error
 	ctx = context.Background()
 	client, err = firestore.NewClient(ctx, os.Getenv("PROJECT_ID"))
 	if err != nil {
 		log.Fatalf("db init failed: %v", err)
 	}
+}
+
+func Close() {
+	ctx.Done()
+	client.Close()
 }
