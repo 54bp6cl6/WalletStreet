@@ -119,7 +119,7 @@ func HandleJoinGameEvent(event *linebot.Event) (err error) {
 			message.Text = strings.Trim(message.Text, " ")
 			log.Printf("after trim: %v", message.Text)
 			var match bool
-			if match, err = regexp.MatchString("^/d{4}$", message.Text); err != nil {
+			if match, err = regexp.MatchString("^[0-9]{4}$", message.Text); err != nil {
 				_, err = bot.ReplyMessage(event.ReplyToken, ui.ErrorMessage(err)).Do()
 				return
 			}
