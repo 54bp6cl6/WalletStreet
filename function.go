@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"regexp"
+	"strings"
 
 	"github.com/54bp6cl6/WalletStreet/db"
 	"github.com/54bp6cl6/WalletStreet/postback"
@@ -105,14 +107,38 @@ func HandleJoinGameEvent(event *linebot.Event) (err error) {
 				_, err = bot.ReplyMessage(event.ReplyToken, ui.ErrorMessage(err)).Do()
 				return
 			}
-			_, err = bot.ReplyMessage(event.ReplyToken, ui.CreateGameMessage(gameId)).Do()
+			_, err = bot.ReplyMessage(event.ReplyToken, ui.CreateGameSuccess(gameId)).Do()
 		}
 
 		return // 無效的 Postback 不予回應
 
 	// 處理加入遊戲的文字訊息
 	case linebot.EventTypeMessage:
-		return
+		if message, ok := event.Message.(*linebot.TextMessage); ok {
+			// 檢查訊息是否為 4 個數字
+			message.Text = strings.Trim(message.Text, " ")
+			var match bool
+			if match, err = regexp.MatchString("^/d{4}$", message.Text); err != nil {
+				_, err = bot.ReplyMessage(event.ReplyToken, ui.ErrorMessage(err)).Do()
+				return
+			}
+
+			if match {
+				// 檢查遊戲是否存在
+				var exist bool
+				if exist, err = db.IsGameExist(message.Text); err != nil {
+					return
+				}
+
+				if exist {
+					if err = db.JoinGame(message.Text, event.Source.UserID); err != nil {
+						return
+					}
+					_, err = bot.ReplyMessage(event.ReplyToken, ui.JoinGameSuccess()).Do()
+					return
+				}
+			}
+		}
 	}
 
 	_, err = bot.ReplyMessage(event.ReplyToken, ui.FollowMessage()).Do()

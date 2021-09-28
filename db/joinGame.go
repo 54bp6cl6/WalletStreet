@@ -1,11 +1,13 @@
 package db
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"math/rand"
 	"time"
 
+	"cloud.google.com/go/firestore"
 	"google.golang.org/api/iterator"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -74,6 +76,33 @@ func IsGameExist(gameId string) (exist bool, err error) {
 		exist = true
 		return
 	}
+}
+
+// 將使用者加入遊戲
+func JoinGame(gameId string, userId string) (err error) {
+	doc := client.Collection(Games).Doc(gameId)
+	// 使用 Transaction
+	err = client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
+		// 取得房間資料
+		var docsnap *firestore.DocumentSnapshot
+		docsnap, err := tx.Get(doc)
+		if status.Code(err) == codes.NotFound {
+			err := fmt.Errorf("game %v not found", gameId)
+			return err
+		} else if err != nil {
+			return err
+		}
+		g := game{}
+		if err = docsnap.DataTo(&g); err != nil {
+			return err
+		}
+
+		// 加入使用者並回寫
+		g.Players = append(g.Players, userId)
+		tx.Set(doc, g)
+		return err
+	})
+	return
 }
 
 // 生成不重複的遊戲編號
