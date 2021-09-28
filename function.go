@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/54bp6cl6/WalletStreet/ui"
 	"github.com/line/line-bot-sdk-go/linebot"
 )
 
@@ -47,10 +48,18 @@ func Webhook(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleEvent(event *linebot.Event) (err error) {
+	err = HandleFollowEvent(event)
+	return
+}
+
+func HandleFollowEvent(event *linebot.Event) (err error) {
 	switch event.Type {
 	case linebot.EventTypeFollow:
+		_, err = bot.ReplyMessage(event.ReplyToken, ui.FollowMessage()).Do()
+		return
 	case linebot.EventTypeUnfollow:
-	default:
+		return
 	}
+	// TODO: Go to next middleware.
 	return
 }
