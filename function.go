@@ -76,9 +76,11 @@ func HandleNotInGameEvent(event *linebot.Event) (err error) {
 
 	if inGame {
 		// TODO: Go to next middleware
+		fmt.Print("跳過NotInGame Middleware")
 		return
 	}
 
+	fmt.Printf("進入NotInGame Middleware %v", event.Type)
 	switch event.Type {
 	case linebot.EventTypePostback:
 		fmt.Printf("Postback: %v", event.Postback.Data)
