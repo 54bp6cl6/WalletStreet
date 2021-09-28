@@ -11,8 +11,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// database
 const (
-	// database
 	Games = "Games"
 )
 
@@ -22,6 +22,7 @@ func init() {
 	random = rand.New(rand.NewSource(time.Now().UnixNano()))
 }
 
+// 資料庫 Games 裡的文件模版
 type game struct {
 	CreateTime time.Time
 	Players    []string
@@ -45,6 +46,7 @@ func IsUserInGame(userId string) (inGame bool, err error) {
 	return
 }
 
+// 於資料庫中創建新遊戲，創建人(userId)將會自動加入
 func CreateGame(userId string) (gameId string, err error) {
 	if gameId, err = generateGameId(); err != nil {
 		return
@@ -58,6 +60,7 @@ func CreateGame(userId string) (gameId string, err error) {
 	return
 }
 
+// 查詢遊戲編號是否存在對應的房間
 func IsGameExist(gameId string) (exist bool, err error) {
 	_, err = client.Collection(Games).Doc(gameId).Get(ctx)
 
@@ -73,8 +76,9 @@ func IsGameExist(gameId string) (exist bool, err error) {
 	}
 }
 
+// 生成不重複的遊戲編號
 func generateGameId() (gameId string, err error) {
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 10; i++ { // 最多嘗試生成10次
 		gameId = fmt.Sprintf("%04d", random.Intn(10000))
 		var exist bool
 		if exist, err = IsGameExist(gameId); err != nil || !exist {

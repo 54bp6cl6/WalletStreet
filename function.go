@@ -25,6 +25,7 @@ func init() {
 	}
 }
 
+// Cloud Function 進入點
 func Webhook(w http.ResponseWriter, r *http.Request) {
 	events, err := bot.ParseRequest(r)
 	if err != nil {
@@ -49,55 +50,71 @@ func Webhook(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "OK")
 }
 
+// Bot 邏輯的起始點
 func HandleEvent(event *linebot.Event) (err error) {
 	err = HandleFollowEvent(event)
 	return
 }
 
+// 處理加入好友與封鎖事件的中間層
 func HandleFollowEvent(event *linebot.Event) (err error) {
 	switch event.Type {
 	case linebot.EventTypeFollow:
 		_, err = bot.ReplyMessage(event.ReplyToken, ui.FollowMessage()).Do()
 		return
 	case linebot.EventTypeUnfollow:
+		// TODO: 刪除所有使用者資料
 		return
 	}
 
-	err = HandleNotInGameEvent(event)
+	// 進入下一層
+	err = HandleJoinGameEvent(event)
 	return
 }
 
-func HandleNotInGameEvent(event *linebot.Event) (err error) {
+// 處理創建與加入遊戲的中間層
+func HandleJoinGameEvent(event *linebot.Event) (err error) {
+	// 取得使用者是否在遊戲中
 	var inGame bool
 	if inGame, err = db.IsUserInGame(event.Source.UserID); err != nil {
 		_, err = bot.ReplyMessage(event.ReplyToken, ui.ErrorMessage(err)).Do()
 		return
 	}
 
+	// 在遊戲中: 前往下一層
 	if inGame {
 		// TODO: Go to next middleware
 		return
 	}
 
 	switch event.Type {
+	// 處理創建遊戲的 Postback
 	case linebot.EventTypePostback:
+		// 將 Postback Data 轉為字典
 		var data map[string]interface{}
 		if data, err = postback.ToMap(event.Postback.Data); err != nil {
 			_, err = bot.ReplyMessage(event.ReplyToken, ui.ErrorMessage(err)).Do()
 			return
 		}
 
+		// 創建新遊戲
 		if data[postback.Action] == postback.CreateGame {
+			// 生成遊戲編號
 			var gameId string
 			if gameId, err = db.CreateGame(event.Source.UserID); err != nil {
 				_, err = bot.ReplyMessage(event.ReplyToken, ui.ErrorMessage(err)).Do()
 				return
 			}
 			_, err = bot.ReplyMessage(event.ReplyToken, ui.CreateGameMessage(gameId)).Do()
-			return
 		}
+
+		return // 無效的 Postback 不予回應
+
+	// 處理加入遊戲的文字訊息
 	case linebot.EventTypeMessage:
 		return
 	}
+
+	_, err = bot.ReplyMessage(event.ReplyToken, ui.FollowMessage()).Do()
 	return
 }

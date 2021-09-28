@@ -2,14 +2,17 @@ package postback
 
 import "fmt"
 
+// fields
 const (
-	// fields
 	Action = "action"
+)
 
-	// Actions
+// Actions
+const (
 	CreateGame = "create_game"
 )
 
+// 取得 Create Game Postback button 要夾帶的資料
 func CreateGameData() string {
 	return fmt.Sprintf(`{"%v": "%v"}`, Action, CreateGame)
 }
