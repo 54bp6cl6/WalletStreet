@@ -76,14 +76,11 @@ func HandleNotInGameEvent(event *linebot.Event) (err error) {
 
 	if inGame {
 		// TODO: Go to next middleware
-		fmt.Print("跳過NotInGame Middleware")
 		return
 	}
 
-	fmt.Printf("進入NotInGame Middleware %v", event.Type)
 	switch event.Type {
 	case linebot.EventTypePostback:
-		fmt.Printf("Postback: %v", event.Postback.Data)
 		var data map[string]interface{}
 		if data, err = postback.ToMap(event.Postback.Data); err != nil {
 			_, err = bot.ReplyMessage(event.ReplyToken, ui.ErrorMessage(err)).Do()
