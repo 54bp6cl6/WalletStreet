@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/54bp6cl6/WalletStreet/db"
+	"github.com/54bp6cl6/WalletStreet/postback"
 	"github.com/54bp6cl6/WalletStreet/ui"
 	"github.com/line/line-bot-sdk-go/linebot"
 )
@@ -66,6 +68,39 @@ func HandleFollowEvent(event *linebot.Event) (err error) {
 }
 
 func HandleNotInGameEvent(event *linebot.Event) (err error) {
-	// TODO: Go to next middleware
+	var inGame bool
+	if inGame, err = db.IsUserInGame(event.Source.UserID); err != nil {
+		_, err = bot.ReplyMessage(event.ReplyToken, ui.ErrorMessage(err)).Do()
+		return
+	}
+
+	if inGame {
+		// TODO: Go to next middleware
+		fmt.Print("跳過NotInGame Middleware")
+		return
+	}
+
+	fmt.Printf("進入NotInGame Middleware %v", event.Type)
+	switch event.Type {
+	case linebot.EventTypePostback:
+		fmt.Printf("Postback: %v", event.Postback.Data)
+		var data map[string]interface{}
+		if data, err = postback.ToMap(event.Postback.Data); err != nil {
+			_, err = bot.ReplyMessage(event.ReplyToken, ui.ErrorMessage(err)).Do()
+			return
+		}
+
+		if data[postback.Action] == postback.CreateGame {
+			var gameId string
+			if gameId, err = db.CreateGame(event.Source.UserID); err != nil {
+				_, err = bot.ReplyMessage(event.ReplyToken, ui.ErrorMessage(err)).Do()
+				return
+			}
+			_, err = bot.ReplyMessage(event.ReplyToken, ui.CreateGameMessage(gameId)).Do()
+			return
+		}
+	case linebot.EventTypeMessage:
+		return
+	}
 	return
 }
