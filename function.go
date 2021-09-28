@@ -117,12 +117,14 @@ func HandleJoinGameEvent(event *linebot.Event) (err error) {
 		if message, ok := event.Message.(*linebot.TextMessage); ok {
 			// 檢查訊息是否為 4 個數字
 			message.Text = strings.Trim(message.Text, " ")
+			log.Printf("after trim: %v", message.Text)
 			var match bool
 			if match, err = regexp.MatchString("^/d{4}$", message.Text); err != nil {
 				_, err = bot.ReplyMessage(event.ReplyToken, ui.ErrorMessage(err)).Do()
 				return
 			}
 
+			log.Printf("match: %v", match)
 			if match {
 				// 檢查遊戲是否存在
 				var exist bool
