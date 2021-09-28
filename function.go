@@ -137,8 +137,10 @@ func HandleJoinGameEvent(event *linebot.Event) (err error) {
 						return
 					}
 					_, err = bot.ReplyMessage(event.ReplyToken, ui.JoinGameSuccess()).Do()
-					return
+				} else {
+					_, err = bot.ReplyMessage(event.ReplyToken, ui.JoinGameFail()).Do()
 				}
+				return
 			}
 		}
 	}
