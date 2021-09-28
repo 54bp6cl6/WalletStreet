@@ -48,11 +48,18 @@ func Webhook(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleEvent(event *linebot.Event) (err error) {
+	err = HandleFollowEvent(event)
+	return
+}
+
+func HandleFollowEvent(event *linebot.Event) (err error) {
 	switch event.Type {
 	case linebot.EventTypeFollow:
 		_, err = bot.ReplyMessage(event.ReplyToken, ui.FollowMessage()).Do()
+		return
 	case linebot.EventTypeUnfollow:
-	default:
+		return
 	}
+	// TODO: Go to next middleware.
 	return
 }
