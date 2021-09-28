@@ -29,7 +29,7 @@ type game struct {
 
 // 查詢使用者是否已經加入遊戲
 func IsUserInGame(userId string) (inGame bool, err error) {
-	query := client.Collection(Games).Where("players", "array-contains", userId)
+	query := client.Collection(Games).Where("Players", "array-contains", userId)
 	iter := query.Documents(ctx)
 	defer iter.Stop()
 
@@ -75,7 +75,7 @@ func IsGameExist(gameId string) (exist bool, err error) {
 
 func generateGameId() (gameId string, err error) {
 	for i := 0; i < 10; i++ {
-		gameId = fmt.Sprintf("%04d", rand.Intn(10000))
+		gameId = fmt.Sprintf("%04d", random.Intn(10000))
 		var exist bool
 		if exist, err = IsGameExist(gameId); err != nil || !exist {
 			return
